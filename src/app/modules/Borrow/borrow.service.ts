@@ -1,7 +1,8 @@
 import ApiError from "../../errors/ApiError";
 import prisma from "../../shared/prisma";
+import { TBorrow } from "../../types/borrowRecord.type";
 
-const createBorrowIntoDB = async (payload: any) => {
+const createBorrowIntoDB = async (payload: TBorrow) => {
   const { bookId, memberId } = payload;
   const isBookAvailable = await prisma.book.findUnique({
     where: { bookId },

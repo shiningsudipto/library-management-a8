@@ -1,6 +1,7 @@
 import prisma from "../../shared/prisma";
+import { TReturn } from "../../types/borrowRecord.type";
 
-const updateBorrowRecordIntoDB = async (payload: any) => {
+const updateBorrowRecordIntoDB = async (payload: TReturn) => {
   const { borrowId } = payload;
   const isBorrowRecordAvailable = await prisma.borrowRecord.findUnique({
     where: { borrowId },

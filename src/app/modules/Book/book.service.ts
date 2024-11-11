@@ -1,13 +1,14 @@
 import ApiError from "../../errors/ApiError";
 import prisma from "../../shared/prisma";
 import httpStatus from "http-status";
+import { TBook } from "./book.type";
 
 const getAllBooksFromDB = async () => {
   const result = await prisma.book.findMany();
   return result;
 };
 
-const createBookIntoDB = async (payload: any) => {
+const createBookIntoDB = async (payload: TBook) => {
   const result = await prisma.book.create({
     data: payload,
   });
@@ -20,7 +21,7 @@ const getBookByIdFromDB = async (bookId: string) => {
   });
   return result;
 };
-const updateBookIntoDB = async (bookId: string, payload: any) => {
+const updateBookIntoDB = async (bookId: string, payload: Partial<TBook>) => {
   const isBookAvailable = await prisma.book.findUnique({
     where: { bookId },
   });
@@ -50,7 +51,7 @@ const deleteBookFromDB = async (bookId: string) => {
   return result;
 };
 
-const createManyBooksIntoDB = async (payload: any) => {
+const createManyBooksIntoDB = async (payload: TBook[]) => {
   return await prisma.book.createMany({
     data: payload,
   });

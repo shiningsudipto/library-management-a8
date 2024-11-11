@@ -1,14 +1,15 @@
 import ApiError from "../../errors/ApiError";
 import prisma from "../../shared/prisma";
 import httpStatus from "http-status";
+import { TMember } from "./member.type";
 
-const createMemberIntoDB = async (payload: any) => {
+const createMemberIntoDB = async (payload: TMember) => {
   const result = await prisma.member.create({
     data: payload,
   });
   return result;
 };
-const createManyMemberIntoDB = async (payload: any) => {
+const createManyMemberIntoDB = async (payload: TMember[]) => {
   const result = await prisma.member.createManyAndReturn({
     data: payload,
   });
@@ -27,7 +28,10 @@ const getMemberByIdFromDB = async (memberId: string) => {
   }
   return result;
 };
-const updateMemberIntoDB = async (memberId: string, payload: any) => {
+const updateMemberIntoDB = async (
+  memberId: string,
+  payload: Partial<TMember>
+) => {
   const isMemberAvailable = await prisma.member.findUnique({
     where: { memberId },
   });
