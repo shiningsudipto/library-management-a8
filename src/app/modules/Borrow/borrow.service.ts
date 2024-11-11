@@ -24,6 +24,54 @@ const createBorrowIntoDB = async (payload: any) => {
   return result;
 };
 
+const getOverdueBorrowsFromDB = async () => {
+  const overdueLimit = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
+
+  // Find overdue borrow records where returnDate is null and borrowDate is older than 14 days from now
+  const overdueBorrows = await prisma.borrowRecord.findMany({
+    where: {
+      returnDate: null,
+      borrowDate: {
+        lte: new Date(Date.now() - overdueLimit),
+      },
+    },
+    include: {
+      book: {
+        select: {
+          title: true,
+        },
+      },
+      member: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  if (overdueBorrows.length === 0) {
+    return [];
+  }
+
+  // Calculate overdue days based on borrowDate
+  const overdueData = overdueBorrows.map((borrow) => {
+    const overdueDays = Math.ceil(
+      (Date.now() - new Date(borrow.borrowDate).getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+
+    return {
+      borrowId: borrow.borrowId,
+      bookTitle: borrow.book.title,
+      borrowerName: borrow.member.name,
+      overdueDays,
+    };
+  });
+
+  return overdueData;
+};
+
 export const borrowService = {
   createBorrowIntoDB,
+  getOverdueBorrowsFromDB,
 };
