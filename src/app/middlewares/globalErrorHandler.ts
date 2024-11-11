@@ -1,66 +1,33 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextFunction, Request, Response } from "express";
-import { ZodError } from "zod";
-import handleZodError from "../errors/handleZodError";
 import { Prisma } from "@prisma/client";
-import { TErrorSources } from "../types/errors";
-import { handlePrismaError } from "../errors/HandlePrismaError";
-import ApiError from "../errors/ApiError";
+import { NextFunction, Request, Response } from "express";
+import httpStatus from "http-status";
 
-export const globalErrorHandler = (
-  error: any,
+const globalErrorHandler = (
+  err: any,
   req: Request,
-  res: any,
+  res: Response,
   next: NextFunction
 ) => {
-  //  setting default value
-  let statusCode: number = 500;
-  let message = "Something went wrong!";
+  let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+  let success = false;
+  let message = err.message || "Something went wrong!";
+  let error = err;
 
-  let errorSources: TErrorSources = [
-    {
-      path: "",
-      message: "Something went wrong",
-    },
-  ];
-
-  if (error instanceof ZodError) {
-    const errors = handleZodError(error);
-    statusCode = errors?.statusCode;
-    message = errors?.message;
-    errorSources = errors?.errorSources;
-  } else if (
-    error instanceof Prisma.PrismaClientKnownRequestError ||
-    error instanceof Prisma.PrismaClientValidationError
-  ) {
-    const errors = handlePrismaError(error);
-    statusCode = errors?.statusCode;
-    message = errors?.message;
-    errorSources = errors?.errorSources;
-  } else if (error instanceof ApiError) {
-    statusCode = error?.statusCode;
-    message = error?.message;
-    errorSources = [
-      {
-        path: "",
-        message: error.message,
-      },
-    ];
-  } else if (error instanceof Error) {
-    message = error.message;
-    errorSources = [
-      {
-        path: "",
-        message: error?.message,
-      },
-    ];
+  if (err instanceof Prisma.PrismaClientValidationError) {
+    message = "Validation Error";
+    error = err.message;
+  } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === "P2002") {
+      message = "Duplicate Key error";
+      error = err.meta;
+    }
   }
 
-  return res.status(statusCode).json({
-    success: false,
+  res.status(statusCode).json({
+    success,
     message,
-    errorSources,
-    stack: error?.stack ? error?.stack : null,
+    error,
   });
 };
+
+export default globalErrorHandler;
