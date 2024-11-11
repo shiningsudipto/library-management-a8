@@ -3,11 +3,11 @@ import { memberController } from "./member.controller";
 
 const router = express.Router();
 
-router.get("/");
-// router.get("/:bookId", memberController.);
-// router.put("/:bookId", memberController.);
-// router.delete("/:bookId", memberController.);
-// router.post("/", memberController.);
-// router.post("/many", memberController.);
+router.post("/", memberController.createMember);
+router.post("/many", memberController.createManyMember);
+router.get("/", memberController.getAllMembers);
+router.get("/:memberId", memberController.getMemberById);
+router.put("/:memberId", memberController.updateMemberById);
+router.delete("/:memberId", memberController.deleteMemberById);
 
 export const MemberRoutes = router;
