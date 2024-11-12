@@ -16,9 +16,13 @@ const createBookIntoDB = async (payload: TBook) => {
 };
 
 const getBookByIdFromDB = async (bookId: string) => {
-  const result = await prisma.book.findUniqueOrThrow({
+  console.log("hit", bookId);
+  const result = await prisma.book.findUnique({
     where: { bookId },
   });
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Book not found");
+  }
   return result;
 };
 const updateBookIntoDB = async (bookId: string, payload: Partial<TBook>) => {
